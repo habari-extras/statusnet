@@ -157,13 +157,13 @@ class Laconica extends Plugin
 
 	/**
 	 * Post a status to service
-	 * @param string $tweet The new status to post
+	 * @param string $lanotice The new status to post
 	 **/
-	public function post_status( $svcurl, $tweet, $name, $pw )
+	public function post_status( $svcurl, $notice, $name, $pw )
 	{
 		$request = new RemoteRequest( $svcurl, 'POST' );
 		$request->add_header( array( 'Authorization' => 'Basic ' . base64_encode( "{$name}:{$pw}" ) ) );
-		$request->set_body( 'source=habari&status=' . urlencode( $tweet ) );
+		$request->set_body( 'source=habari&status=' . urlencode( $notice ) );
 		$request->execute();
 
 	}
