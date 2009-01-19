@@ -42,7 +42,7 @@ class Laconica extends Plugin
 
 	public function help()
 	{
-		$ret = _t('<p>For the <strong>Laconica Service</strong> setting,
+		$help = _t('<p>For the <strong>Laconica Service</strong> setting,
 				enter the portion of your laconica server home page
 				URL between the slash at the end of <tt>http://</tt>
 				and the slash before your user name. I.e., the upper-
@@ -51,7 +51,7 @@ class Laconica extends Plugin
 				<p>For identi.ca, for example, since your URL is
 				something like <tt>http://identi.ca/yourname</tt>,
 				you would enter <tt>identi.ca</tt>.</p>');
-		return $ret;
+		return $help;
 	}
 
 	/**
@@ -157,7 +157,8 @@ class Laconica extends Plugin
 
 	/**
 	 * Post a status to service
-	 * @param string $lanotice The new status to post
+	 * @param string $svcurl Catenation of user server, API endpoints
+	 * @param string $notice The new status to post
 	 **/
 	public function post_status( $svcurl, $notice, $name, $pw )
 	{
@@ -187,7 +188,7 @@ class Laconica extends Plugin
 					$name = Options::get( 'laconica__username' );
 					$pw = Options::get( 'laconica__password' );
 				}
-				$svcurl = 'http://' . urlencode( Options::get('laconica__svc') ) . '/api/statuses/update.xml';
+				$svcurl = 'http://' . Options::get('laconica__svc') . '/index.php?action=api&apiaction=statuses&method=update.xml';
 				$this->post_status( $svcurl, Options::get( 'laconica__prepend' ) . $post->title . ' ' . $post->permalink, $name, $pw );
 			}
 		}
@@ -205,7 +206,7 @@ class Laconica extends Plugin
 	public function theme_laconica( $theme )
 	{
 		if ( Options::get( 'laconica__show' ) && Options::get( 'laconica__svc' ) && Options::get( 'laconica__username' ) != '' ) {
-			$laconica_url = 'http://' . urlencode( Options::get( 'laconica__svc' ) ) . '/api/statuses/user_timeline/' . urlencode( Options::get( 'laconica__username' ) ) . '.xml';
+			$laconica_url = 'http://' . Options::get( 'laconica__svc' ) . '/index.php?action=api&apiaction=statuses&method=user_timeline&argument=' . urlencode( Options::get( 'laconica__username' ) ) . '.xml';
 			
 			/* 
 			 * Only need to get a single notice if @replies are hidden.

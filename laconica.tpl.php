@@ -3,5 +3,5 @@
 <div id="twitterbox">
  <img src="<?php echo htmlspecialchars( $notice_image_url ); ?>" alt="<?php echo urlencode( Options::get( 'laconica__username' )); ?>">
  <p><?php echo $notice_text . ' @ ' . $notice_time; ?></p>
-<p><small>via <a href="http://<?php echo urlencode(Options::get('laconica__svc')); ?>/<?php echo urlencode( Options::get( 'laconica__username' )); ?>"><?php echo Options::get('laconica__svc'); ?></a></small></p>
+<p><small>via <a href="http://<?php echo Options::get('laconica__svc'); ?>/<?php echo urlencode( Options::get( 'laconica__username' )); ?>"><?php echo Options::get('laconica__svc'); ?></a></small></p>
  </div>
