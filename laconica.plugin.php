@@ -43,12 +43,11 @@ class Laconica extends Plugin
 	public function help()
 	{
 		$help = _t('<p>For the <strong>Laconica Service</strong> setting,
-				enter the portion of your laconica server home page
+				enter the portion of your Laconica server home page
 				URL between the slash at the end of <tt>http://</tt>
-				and the slash before your user name. I.e., the upper-
-				case letters in the string
-				<tt>http://LACONICA.SERVICE/yourname</tt>.</p>
-				<p>For identi.ca, for example, since your URL is
+				and the slash before your user name:
+				<tt>http://</tt><strong>laconica.service</strong><tt>/</tt><em>yourname</em>.</p>
+				<p>To use identi.ca, for example, since your URL is
 				something like <tt>http://identi.ca/yourname</tt>,
 				you would enter <tt>identi.ca</tt>.</p>');
 		return $help;
