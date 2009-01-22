@@ -212,7 +212,7 @@ class Laconica extends Plugin
 			 * (Otherwise, rely on the maximum returned and hope one is a non-reply.)
 			 */
 			if ( Options::get( 'laconica__hide_replies' ) == '0' ) {
-				$laconica_url .= '?count=1';
+				$laconica_url .= '&count=1';
 			}
 
 			if ( Cache::has( 'laconica_notice_text' ) && Cache::has( 'laconica_notice_time' ) && Cache::has( 'notice_image_url' ) ) {
