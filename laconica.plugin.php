@@ -276,7 +276,7 @@ class Laconica extends Plugin
 			/* http: links */
 			$theme->notice_text = preg_replace( '%https?://\S+?(?=(?:[.:?"!$&\'()*+,=]|)(?:\s|$))%i', "<a href=\"$0\">$0</a>", $theme->notice_text );
 			/* @usernames */
-			$theme->notice_text = preg_replace( '/(?<!\w)@([\w-_.]{1,64})/', '@<a href="http://' . Options::get('laconica__svc') . '/index.php?action=showstream&nickname=$1">$1</a>', $theme->notice_text );
+			$theme->notice_text = preg_replace( '/(?<!\w)@([\w-_.]{1,64})/', '@<a href="http://' . Options::get('laconica__svc') . '/index.php?action=showstream&amp;nickname=$1">$1</a>', $theme->notice_text );
 			/* Not implemented: #hashtags, !groups. */
 		}
 		return $theme->fetch( 'laconica.tpl' );
