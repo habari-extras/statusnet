@@ -2,8 +2,8 @@
 /**
  * Laconica Twitter-Compat API Plugin
  *
- * Show your current status at your chosen Laconica server in your theme,
- * as well as optionally post your new posts to your Laconica service.
+ * Show your latest Laconica notice in your theme and/or
+ * post your latest blog post to your Laconica service.
  *
  * Usage: <?php $theme->laconica(); ?> to show your latest notice.
  * Copy the laconica.tpl.php template to your active theme to customize
@@ -49,7 +49,9 @@ class Laconica extends Plugin
 				<tt>http://</tt><strong>laconica.service</strong><tt>/</tt><em>yourname</em>.</p>
 				<p>To use identi.ca, for example, since your URL is
 				something like <tt>http://identi.ca/yourname</tt>,
-				you would enter <tt>identi.ca</tt>.</p>');
+				you would enter <tt>identi.ca</tt>.</p>
+				<p>To display your latest notice, call <code>$theme->laconica();</code>
+				at the appropriate place in your theme.</p>');
 		return $help;
 	}
 
@@ -74,16 +76,16 @@ class Laconica extends Plugin
 	public function action_plugin_activation( $file )
 	{
 		if(Plugins::id_from_file($file) == Plugins::id_from_file(__FILE__)) {
-			if ( Options::get( 'laconica__hide_replies' ) == null ) {
-				Options::set( 'laconica__hide_replies', 0 );
+			if ( Options::get( 'laconica__hide_replies' ) != 0 ) {
+				Options::set( 'laconica__hide_replies', 1 );
 			}
-			if ( Options::get( 'laconica__linkify_urls' ) == null ) {
-				Options::set( 'laconica__linkify_urls', 0 );
+			if ( Options::get( 'laconica__linkify_urls' ) != 0 ) {
+				Options::set( 'laconica__linkify_urls', 1 );
 			}
 			if ( Options::get( 'laconica__svc' ) == null ) {
 				Options::set( 'laconica__svc', 'identi.ca' );
 			}
-			if ( Options::get( 'laconica__show' ) == null ) {
+			if ( Options::get( 'laconica__show' ) != 0 ) {
 				Options::set( 'laconica__show', 1 );
 			}
 		}
@@ -107,25 +109,20 @@ class Laconica extends Plugin
 					_t('Service Username:') );
 				$laconica_password = $ui->append( 'password', 'password', 'laconica__password', 
 					_t('Service Password:') );
-				$laconica_post = $ui->append( 'select', 'post_status', 'laconica__post_status', 
-					_t('Autopost to Service:') );
+				$laconica_post = $ui->append( 'checkbox', 'post_status', 'laconica__post_status', 
+					_t('Autopost to Service') );
 				$laconica_post->options = array( '0' => _t('Disabled'), '1' => _t('Enabled') );
-				$laconica_post = $ui->append( 'text', 'prepend', 'laconica__prepend',
-				 _t('Prepend to Autopost:'));
-				$laconica_post->value = "New Blog Post:";
-				$laconica_show = $ui->append( 'select', 'show', 'laconica__show', 
-					_t('Make Posts available to Habari') );
-				$laconica_show->options = array( '0' => _t('No'), '1' => _t('Yes') );
-				$laconica_show = $ui->append( 'select', 'hide_replies', 
+				$laconica_post = $ui->append( 'text', 'prefix', 'laconica__prefix',
+				 _t('Autopost Prefix (e.g., "New post: "):') );
+				$laconica_show = $ui->append( 'checkbox', 'show', 'laconica__show', 
+					_t('Fetch latest notice') );
+				$laconica_show = $ui->append( 'checkbox', 'hide_replies', 
 					'laconica__hide_replies', _t('Hide @replies') );
-				$laconica_show->options = array( '1' => _t('Yes') , '0' => _t('No') );
-				$laconica_show = $ui->append( 'select', 'linkify_urls', 
+				$laconica_show = $ui->append( 'checkbox', 'linkify_urls', 
 					'laconica__linkify_urls', _t('Linkify URLs') );
-				$laconica_show->options = array( '1' => _t('Yes') , '2' => _t('Yes - and shorten link text to domains only'),
-					 '0' => _t('No') );
 				$laconica_cache_time = $ui->append( 'text', 'cache', 'laconica__cache', 
 					_t('Cache expiry in seconds:') );
-				// $ui->on_success( array( $this, 'updated_config' ) );
+				$ui->on_success( array( $this, 'updated_config' ) );
 				$ui->append( 'submit', 'save', _t('Save') );
 				$ui->out();
 			
@@ -137,9 +134,10 @@ class Laconica extends Plugin
 	 * Returns true if plugin config form values defined in action_plugin_ui should be stored in options by Habari
 	 * @return bool True if options should be stored
 	 **/
-	public function updated_config( $ui )
+	public function updated_config( FormUI $ui )
 	{
-		return true;
+		Session::notice( _t( 'Laconica options saved.', 'laconica' ) );
+		$ui->save();
 	}
 
 	/**
@@ -188,7 +186,7 @@ class Laconica extends Plugin
 					$pw = Options::get( 'laconica__password' );
 				}
 				$svcurl = 'http://' . Options::get('laconica__svc') . '/index.php?action=api&apiaction=statuses&method=update.xml';
-				$this->post_status( $svcurl, Options::get( 'laconica__prepend' ) . $post->title . ' ' . $post->permalink, $name, $pw );
+				$this->post_status( $svcurl, Options::get( 'laconica__prefix' ) . $post->title . ' ' . $post->permalink, $name, $pw );
 			}
 		}
 	}
@@ -268,18 +266,19 @@ class Laconica extends Plugin
 			}
 		}
 		else {
-			$theme->notice_text = _t('Please set your username in the <a href="%s">Laconica plugin config</a>', array( URL::get( 'admin' , 
+			$theme->notice_text = _t('Check username or "Show latest notice" setting in <a href="%s">Laconica plugin config</a>', array( URL::get( 'admin' , 
 			'page=plugins&configure=' . $this->plugin_id . '&configaction=Configure' ) . '#plugin_' . 
 			$this->plugin_id ) , 'laconica' );			
 			$theme->notice_time = '';
 			$theme->notice_image_url = '';
 		}
 		if ( Options::get( 'laconica__linkify_urls' ) != FALSE ) {
-			$theme->notice_text = 
-preg_replace("/(http\:\/\/)?(www.)?([a-z]+\.[a-z]{2,5})([a-z\/]*)/", "<a href=\"http://$2$3$4\">" . 
-			( Options::get( 'laconica__linkify_urls' ) == 2 ? "$3" : "$2$3$4" ) . "</a>", $theme->notice_text);
-
-}
+			/* http: links */
+			$theme->notice_text = preg_replace( '%https?://\S+?(?=(?:[.:?"!$&\'()*+,=]|)(?:\s|$))%i', "<a href=\"$0\">$0</a>", $theme->notice_text );
+			/* @usernames */
+			$theme->notice_text = preg_replace( '/(?<!\w)@([\w-_.]{1,64})/', '@<a href="http://' . Options::get('laconica__svc') . '/index.php?action=showstream&nickname=$1">$1</a>', $theme->notice_text );
+			/* Not implemented: #hashtags, !groups. */
+		}
 		return $theme->fetch( 'laconica.tpl' );
 	}
 
