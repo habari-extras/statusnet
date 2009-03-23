@@ -21,7 +21,7 @@ class Laconica extends Plugin
 	{
 		return array(
 			'name' => 'Laconica',
-			'version' => '0.6',
+			'version' => '0.6.1',
 			'url' => 'http://habariproject.org/',
 			'author' => 'Habari Community',
 			'authorurl' => 'http://habariproject.org/',
@@ -275,9 +275,6 @@ class Laconica extends Plugin
 		if ( Options::get( 'laconica__linkify_urls' ) != FALSE ) {
 			/* http: links */
 			$theme->notice_text = preg_replace( '%https?://\S+?(?=(?:[.:?"!$&\'()*+,=]|)(?:\s|$))%i', "<a href=\"$0\">$0</a>", $theme->notice_text );
-			/* @usernames */
-			$theme->notice_text = preg_replace( '/(?<!\w)@([\w-_.]{1,64})/', '@<a href="http://' . Options::get('laconica__svc') . '/index.php?action=showstream&amp;nickname=$1">$1</a>', $theme->notice_text );
-			/* Not implemented: #hashtags, !groups. */
 		}
 		return $theme->fetch( 'laconica.tpl' );
 	}

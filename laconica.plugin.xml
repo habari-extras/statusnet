@@ -1,6 +1,6 @@
 <plugin>
 	<name>Laconica</name>
-	<version>0.6</version>
+	<version>0.6.1</version>
 	<url>http://habariproject.org/</url>
 	<author>Habari Community</author>
 	<authorurl>http://habariproject.org/</authorurl>
