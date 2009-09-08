@@ -240,7 +240,9 @@ class StatusNet extends Plugin
 								$notice = (object) array (
 									'text' => (string) $status->text, 
 									'time' => (string) $status->created_at, 
-									'image_url' => (string) $status->user->profile_image_url
+									'image_url' => (string) $status->user->profile_image_url,
+									'id' => (int) $status->id,
+									'permalink' => 'http://' . Options::get('statusnet__svc') . '/notice/' . (string) $status->id,
 								);
 								
 								$notices[] = $notice;

@@ -5,7 +5,7 @@
 		<?php foreach ($notices as $notice) : ?>
 		<li>
 			<img src="<?php echo htmlspecialchars( $notice->image_url ); ?>" alt="<?php echo urlencode( Options::get( 'statusnet__username' )); ?>">
-			<?php echo $notice->text . ' @ ' . $notice->time; ?>
+			<?php echo $notice->text . ' @ <a href="' . $notice->permalink . '">' . $notice->time . '</a>'; ?>
 		</li>
 		<?php endforeach; ?>
 	</ul>
