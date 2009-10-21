@@ -254,7 +254,7 @@ class StatusNet extends Plugin
 							}
 						}
 						if ( !$notices ) {							
-							$notice->text = 'No non-replies replies available from service.';
+							$notice->text = 'Only replies available from service.';
 							$notice->permalink = '';
 							$notice->time = '';
 							$notice->image_url = '';
