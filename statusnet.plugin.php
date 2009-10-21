@@ -255,6 +255,7 @@ class StatusNet extends Plugin
 						}
 						if ( !$notices ) {							
 							$notice->text = 'No non-replies replies available from service.';
+							$notice->permalink = '';
 							$notice->time = '';
 							$notice->image_url = '';
 						}
@@ -262,18 +263,21 @@ class StatusNet extends Plugin
 					// You can get error as a root element if service is in maintance mode.
 					else if ( $xml->getName() === 'error' ) {
 						$notice->text = (string) $xml;
+						$notice->permalink = '';
 						$notice->time = '';
 						$notice->image_url = '';
 					}
 					// Should not be reached.
 					else {
 						$notice->text = 'Received unexpected XML from service.';
+						$notice->permalink = '';
 						$notice->time = '';
 						$notice->image_url = '';
 					}
 				}
 				catch ( Exception $e ) {
 					$notice->text = 'Unable to contact service.';
+					$notice->permalink = '';
 					$notice->time = '';
 					$notice->image_url = '';
 				}
