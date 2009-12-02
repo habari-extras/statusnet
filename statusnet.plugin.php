@@ -13,27 +13,9 @@
 
 class StatusNet extends Plugin
 {
-	/**
-	 * Update beacon support. UID is real, but not reg'd with project.
-	 **/
 	public function action_update_check()
 	{
 		Update::add( 'StatusNet', '8676A858-E4B1-11DD-9968-131C56D89593', $this->info->version );
-	}
-
-	public function help()
-	{
-		$help = _t('<p>For the <strong>&micro;blog service</strong> setting,
-				enter the portion of your &micro;blog service home page
-				URL between the slash at the end of <tt>http://</tt>
-				and the slash before your user name:
-				<tt>http://</tt><strong>statusnet.service</strong><tt>/</tt><em>yourname</em>.</p>
-				<p>To use identi.ca, for example, since your URL is
-				something like <tt>http://identi.ca/yourname</tt>,
-				you would enter <tt>identi.ca</tt>.</p>
-				<p>To display your latest notices, call <code>$theme->statusnet();</code>
-				at the appropriate place in your theme.</p>');
-		return $help;
 	}
 
 	/**
