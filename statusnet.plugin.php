@@ -179,7 +179,7 @@ class StatusNet extends Plugin
 					$name = Options::get( 'statusnet__username' );
 					$pw = Options::get( 'statusnet__password' );
 				}
-				$svcurl = 'http://' . Options::get('statusnet__svc') . '/api/statuses/update.xml';
+				$svcurl = 'https://' . Options::get('statusnet__svc') . '/api/statuses/update.xml';
 				$this->post_status( $svcurl, Options::get( 'statusnet__prefix' ) . $post->title . ' ' . $post->permalink, $name, $pw );
 			}
 		}
