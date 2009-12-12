@@ -207,9 +207,9 @@ class StatusNet extends Plugin
 			if ( !Options::get( 'statusnet__hide_replies' ) &&  Options::get( 'statusnet__limit' ) ) {
 				$statusnet_url .= '?count=' . Options::get( 'statusnet__limit' );
 			}
-
-			if ( Cache::has( 'statusnet_notices' ) ) {
-				 $notices = Cache::get( 'statusnet_notices' );
+			// unserialize the cache for PC compayibility
+			if ( Cache::has('statusnet_notices') ) {
+				 $notices = unserialize( Cache::get('statusnet_notices') );
 			}
 			else {
 				try {
@@ -235,7 +235,7 @@ class StatusNet extends Plugin
 							// it's a @. Keep going.
 							}
 						}
-						if ( !$notices ) {							
+						if ( !$notices ) {
 							$notice->text = 'Only replies available from service.';
 							$notice->permalink = '';
 							$notice->time = '';
@@ -263,10 +263,12 @@ class StatusNet extends Plugin
 					$notice->time = '';
 					$notice->image_url = '';
 				}
-				if (!$notices)
+				if (!$notices) {
 					$notices[] = $notice;
+				}
+				// be APC Cache compatible, so we serialize arrays of objects
 				// Cache (even errors) to avoid hitting rate limit.
-				Cache::set( 'statusnet_notices', $notices, Options::get( 'statusnet__cache' ) );
+				Cache::set( 'statusnet_notices', serialize($notices), Options::get( 'statusnet__cache' ) );
 			}
 			if ( Options::get( 'statusnet__linkify_urls' ) != FALSE ) {
 				/* http: links */
