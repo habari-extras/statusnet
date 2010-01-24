@@ -17,7 +17,7 @@
 			<p>To use identi.ca, for example, since your URL is
 			something like <tt>http://identi.ca/yourname</tt>,
 			you would enter <tt>identi.ca</tt>.</p>
-			<p>To display your latest notices, call <code>$theme->statusnet();</code>
+			<p>To display your latest notices, call <code>&lt;?php $theme->statusnet(); ?&gt;</code>
 			at the appropriate place in your theme.</p>
 		]]></value>
 	</help>
