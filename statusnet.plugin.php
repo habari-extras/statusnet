@@ -169,9 +169,9 @@ class StatusNet extends Plugin
 
 	/**
 	 * Add last service status, time, and image to the available template vars
-	 * @param Theme $theme The theme that will display the template
+	 * for the use of the theme_statusnet and action_block functions.
 	 **/
-	public function theme_statusnet( $theme )
+	public function notices()
 	{
 		$notices = array();
 		if ( Options::get( 'statusnet__show' ) && Options::get( 'statusnet__svc' ) && Options::get( 'statusnet__username' ) != '' ) {
@@ -265,12 +265,21 @@ class StatusNet extends Plugin
 			);
 			$notices[] = $notice;
 		}
-		$theme->notices = $notices;
+		return $notices;
+	}
+
+	/**
+	 * The older, $theme->statusnet() handle.
+	 * @param Theme $theme The theme that will display the template	 
+	 */
+	public function theme_statusnet( $theme )
+	{
+		$theme->notices = $this->notices();
 		return $theme->fetch( 'statusnet.tpl' );
 	}
-	
+
 	/**
-	 * Blocks and Areas support. Duplicates the theme_statusnet function.
+	 * The newer Blocks and Areas support.
 	 */	
 	public function filter_block_list($block_list)
 	{
@@ -280,104 +289,7 @@ class StatusNet extends Plugin
 	
 	public function action_block_content_statusnet($block, $theme)
 	{
-		/* 
-		 * Not sure what to do here but duplicate theme_statusnet,
-		 * modifying only the ending (if supporting both
-		 * theme->statusnet and block_content).
-		 */
-		$notices = array();
-		if ( Options::get( 'statusnet__show' ) && Options::get( 'statusnet__svc' ) && Options::get( 'statusnet__username' ) != '' ) {
-			$statusnet_url = 'http://' . Options::get( 'statusnet__svc' ) . '/api/statuses/user_timeline/' . urlencode( Options::get( 'statusnet__username' ) ) . '.xml';
-			
-			/* 
-			 * Only need to get a single notice if @replies are hidden.
-			 * (Otherwise, rely on the maximum returned and hope one is a non-reply.)
-			 */
-			if ( !Options::get( 'statusnet__hide_replies' ) &&  Options::get( 'statusnet__limit' ) ) {
-				$statusnet_url .= '?count=' . Options::get( 'statusnet__limit' );
-			}
-			// get cache group.
-			if ( Cache::has_group('statusnet') ) {
-				$notices = Cache::get_group('statusnet');
-			}
-			else {
-				try {
-					$response = RemoteRequest::get_contents( $statusnet_url );
-					$xml = @new SimpleXMLElement( $response );
-					// Check we've got a load of statuses returned
-					if ( $xml->getName() === 'statuses' ) {
-						foreach ( $xml->status as $status ) {
-							if ( ( !Options::get( 'statusnet__hide_replies' ) ) || ( strpos( $status->text, '@' ) === false) ) {
-								$notice = (object) array (
-														  'text' => (string) $status->text, 
-														  'time' => (string) $status->created_at, 
-														  'image_url' => (string) $status->user->profile_image_url,
-														  'id' => (int) $status->id,
-														  'permalink' => 'http://' . Options::get('statusnet__svc') . '/notice/' . (string) $status->id,
-														  );
-								
-								$notices[] = $notice;
-								if ( Options::get( 'statusnet__hide_replies' ) && count($notices) >= Options::get( 'statusnet__limit' ) )
-									break;
-							}
-							else {
-								// it's a @. Keep going.
-							}
-						}
-						if ( !$notices ) {
-							$notice->text = 'Only replies available from service.';
-							$notice->permalink = '';
-							$notice->time = '';
-							$notice->image_url = '';
-						}
-					}
-					// You can get error as a root element if service is in maintance mode.
-					else if ( $xml->getName() === 'error' ) {
-						$notice->text = (string) $xml;
-						$notice->permalink = '';
-						$notice->time = '';
-						$notice->image_url = '';
-					}
-					// Should not be reached.
-					else {
-						$notice->text = 'Received unexpected XML from service.';
-						$notice->permalink = '';
-						$notice->time = '';
-						$notice->image_url = '';
-					}
-				}
-				catch ( Exception $e ) {
-					$notice->text = 'Unable to contact service.';
-					$notice->permalink = '';
-					$notice->time = '';
-					$notice->image_url = '';
-				}
-				if (!$notices) {
-					$notices[] = $notice;
-				}
-				// Cache (even errors) to avoid hitting rate limit.
-				// Use cache group to cache multiple statuses (objects)
-				foreach ($notices as $i => $notice) {
-					Cache::set( array('statusnet', $i), $notice, Options::get( 'statusnet__cache' ) );
-				}
-			}
-			if ( Options::get( 'statusnet__linkify_urls' ) != FALSE ) {
-				/* http: links */
-				foreach ($notices as $notice) {
-					$notice->text = preg_replace( '%https?://\S+?(?=(?:[.:?"!$&\'()*+,=]|)(?:\s|$))%i', "<a href=\"$0\">$0</a>", $notice->text );
-				}
-			}
-		}
-		else {
-			$notice = (object) array (
-									  'text' => _t('Check username or "Show latest notice" setting in <a href="%s">StatusNet plugin config</a>', array( URL::get( 'admin' , 
-																																								 'page=plugins&configure=' . $this->plugin_id . '&configaction=Configure' ) . '#plugin_' . $this->plugin_id ) , 'statusnet' ), 
-									  'time' => '', 
-									  'image_url' => ''
-									  );
-			$notices[] = $notice;
-		}
-		$block->notices = $notices; // Only variance from theme_statusnet.
+		$block->notices = $this->notices();
 	}
 
 	/**
