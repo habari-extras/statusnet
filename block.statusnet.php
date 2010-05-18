@@ -1,6 +1,6 @@
 <!-- Copy this file to theme directory for modification. -->
 
-<div id="statusnetbox">
+<div id="statusnetbox" class="block-<?php echo Utils::slugify($content->title); ?>">
 	<a href="http://<?php echo Options::get('statusnet__svc'); ?>/<?php echo urlencode( Options::get( 'statusnet__username' )); ?>">
 	<img src="<?php echo htmlspecialchars( $content->notices[0]->image_url ); ?>" alt="<?php echo urlencode( Options::get( 'statusnet__username' ) ); ?>" title="<?php echo Options::get('statusnet__svc'); ?>/<?php echo urlencode( Options::get( 'statusnet__username' ) ); ?>">
 	</a>
