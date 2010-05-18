@@ -6,7 +6,7 @@
  * post your latest blog post to your StatusNet service.
  *
  * Usage: <?php $theme->statusnet(); ?> to show your latest notices.
- * Copy the statusnet.tpl.php template to your active theme to customize
+ * Copy the statusnet.php template to your active theme to customize
  * output display.
  *
  **/
@@ -385,7 +385,7 @@ class StatusNet extends Plugin
 	 */
 	public function action_init()
 	{
-		$this->add_template('statusnet.tpl', dirname(__FILE__) . '/statusnet.tpl.php');
+		$this->add_template('statusnet.tpl', dirname(__FILE__) . '/statusnet.php');
 		$this->add_template('block.statusnet', dirname(__FILE__) . '/block.statusnet.php');
 	}	
 	
