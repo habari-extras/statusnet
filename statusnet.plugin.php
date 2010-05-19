@@ -275,7 +275,7 @@ class StatusNet extends Plugin
 	public function theme_statusnet( $theme )
 	{
 		$theme->notices = $this->notices();
-		return $theme->fetch( 'statusnet.tpl' );
+		return $theme->fetch( 'statusnet' );
 	}
 
 	/**
@@ -297,7 +297,7 @@ class StatusNet extends Plugin
 	 */
 	public function action_init()
 	{
-		$this->add_template('statusnet.tpl', dirname(__FILE__) . '/statusnet.php');
+		$this->add_template('statusnet', dirname(__FILE__) . '/statusnet.php');
 		$this->add_template('block.statusnet', dirname(__FILE__) . '/block.statusnet.php');
 	}	
 	
