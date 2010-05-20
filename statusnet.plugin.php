@@ -33,9 +33,6 @@ class StatusNet extends Plugin
 			if ( !Options::get( 'statusnet__svc' )  ) {
 				Options::set( 'statusnet__svc', 'identi.ca' );
 			}
-			if ( Options::get( 'statusnet__show' ) !== 0 ) {
-				Options::set( 'statusnet__show', 1 );
-			}
 			if ( !Options::get( 'statusnet__limit' ) ) {
 				Options::set( 'statusnet__limit', 1 );
 			}
@@ -73,10 +70,6 @@ class StatusNet extends Plugin
 		$ui->prefix->move_into($ui->publishinfo);
 
 		$ui->append('fieldset', 'subscribeinfo', _t('Subscribe', 'statusnet'));			
-
-		$statusnet_show = $ui->append( 'checkbox', 'show', 'statusnet__show', 
-			_t('Retrieve µblog notices for blog display') );
-		$ui->show->move_into($ui->subscribeinfo);
 
 		$statusnet_limit = $ui->append( 'select', 'limit', 'statusnet__limit', 
 			_t('Number of notices to display:') );
@@ -168,23 +161,24 @@ class StatusNet extends Plugin
 	}
 
 	/**
-	 * Add last service status, time, and image to the available template vars
-	 * for the use of the theme_statusnet and action_block functions.
+	 * Fetch notices from service.
+	 *
+	 * @return array notices The status messages
 	 **/
-	public function notices()
+	public function notices( $svc, $username, $hide_replies = false, $limit = 1, $cache = 60, $linkify_urls = false )
 	{
 		$notices = array();
-		if ( Options::get( 'statusnet__show' ) && Options::get( 'statusnet__svc' ) && Options::get( 'statusnet__username' ) != '' ) {
-			$statusnet_url = 'http://' . Options::get( 'statusnet__svc' ) . '/api/statuses/user_timeline/' . urlencode( Options::get( 'statusnet__username' ) ) . '.xml';
+		if ( $svc && $username != '' ) {
+			$statusnet_url = 'http://' . $svc . '/api/statuses/user_timeline/' . urlencode( $username ) . '.xml';
 			
 			/* 
 			 * Only need to get a single notice if @replies are hidden.
 			 * (Otherwise, rely on the maximum returned and hope one is a non-reply.)
 			 */
-			if ( !Options::get( 'statusnet__hide_replies' ) &&  Options::get( 'statusnet__limit' ) ) {
-				$statusnet_url .= '?count=' . Options::get( 'statusnet__limit' );
+			if ( ! $hide_replies && $limit ) {
+				$statusnet_url .= '?count=' . $limit;
 			}
-			// get cache group.
+			// Get cache group.
 			if ( Cache::has_group('statusnet') ) {
 				$notices = Cache::get_group('statusnet');
 			}
@@ -246,10 +240,10 @@ class StatusNet extends Plugin
 				// Cache (even errors) to avoid hitting rate limit.
 				// Use cache group to cache multiple statuses (objects)
 				foreach ($notices as $i => $notice) {
-					Cache::set( array('statusnet', $i), $notice, Options::get( 'statusnet__cache' ) );
+					Cache::set( array('statusnet', $i), $notice, $cache );
 				}
 			}
-			if ( Options::get( 'statusnet__linkify_urls' ) != FALSE ) {
+			if ( $linkify_urls != FALSE ) {
 				/* http: links */
 				foreach ($notices as $notice) {
 					$notice->text = preg_replace( '%https?://\S+?(?=(?:[.:?"!$&\'()*+,=]|)(?:\s|$))%i', "<a href=\"$0\">$0</a>", $notice->text );
@@ -258,7 +252,7 @@ class StatusNet extends Plugin
 		}
 		else {
 			$notice = (object) array (
-			'text' => _t('Check "Service username" and "Retrieve µblog notices" settings in <a href="%s">StatusNet plugin config</a>', array( URL::get( 'admin' , 
+			'text' => _t('Check "µblog service" and "Service username" settings in <a href="%s">StatusNet plugin config</a>', array( URL::get( 'admin' , 
 			'page=plugins&configure=' . $this->plugin_id . '&configaction=Configure' ) . '#plugin_' . $this->plugin_id ) , 'statusnet' ), 
 			'time' => '', 
 			'image_url' => ''
@@ -274,7 +268,8 @@ class StatusNet extends Plugin
 	 */
 	public function theme_statusnet( $theme )
 	{
-		$theme->notices = $this->notices();
+		$sn = Options::get_group( 'statusnet' );
+		$theme->notices = $this->notices( $sn['svc'], $sn['username'], $sn['hide_replies'], $sn['limit'], $sn['cache'], $sn['linkify_urls'] );
 		return $theme->fetch( 'statusnet' );
 	}
 
@@ -289,7 +284,8 @@ class StatusNet extends Plugin
 	
 	public function action_block_content_statusnet($block, $theme)
 	{
-		$block->notices = $this->notices();
+		$sn = Options::get_group( 'statusnet' );
+		$block->notices = $this->notices( $sn['svc'], $sn['username'], $sn['hide_replies'], $sn['limit'], $sn['cache'], $sn['linkify_urls'] );
 	}
 
 	/**
