@@ -189,17 +189,17 @@ class StatusNet extends Plugin
 					// Check we've got a load of statuses returned
 					if ( $xml->getName() === 'statuses' ) {
 						foreach ( $xml->status as $status ) {
-							if ( ( !Options::get( 'statusnet__hide_replies' ) ) || ( strpos( $status->text, '@' ) === false) ) {
+							if ( ( ! $hide_replies ) || ( strpos( $status->text, '@' ) === false) ) {
 								$notice = (object) array (
 									'text' => (string) $status->text, 
 									'time' => (string) $status->created_at, 
 									'image_url' => (string) $status->user->profile_image_url,
 									'id' => (int) $status->id,
-									'permalink' => 'http://' . Options::get('statusnet__svc') . '/notice/' . (string) $status->id,
+									'permalink' => 'http://' . $svc . '/notice/' . (string) $status->id,
 								);
 								
 								$notices[] = $notice;
-								if ( Options::get( 'statusnet__hide_replies' ) && count($notices) >= Options::get( 'statusnet__limit' ) )
+								if ( $hide_replies && count($notices) >= $limit )
 									break;
 							}
 							else {
