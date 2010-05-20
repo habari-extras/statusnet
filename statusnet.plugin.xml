@@ -18,7 +18,7 @@
 			something like <tt>http://identi.ca/yourname</tt>,
 			you would enter <tt>identi.ca</tt>.</p>
 			<p>To display your latest notices, call <code>&lt;?php $theme->statusnet(); ?&gt;</code>
-			at the appropriate place in your theme.</p>
+			at the appropriate place in your theme, or add a <strong>StatusNet</strong> Block on the <strong>Themes</strong> page.</p>
 		]]></value>
 	</help>
 </pluggable>

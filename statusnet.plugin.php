@@ -258,7 +258,7 @@ class StatusNet extends Plugin
 		}
 		else {
 			$notice = (object) array (
-			'text' => _t('Check username or "Show latest notice" setting in <a href="%s">StatusNet plugin config</a>', array( URL::get( 'admin' , 
+			'text' => _t('Check "Service username" and "Retrieve µblog notices" settings in <a href="%s">StatusNet plugin config</a>', array( URL::get( 'admin' , 
 			'page=plugins&configure=' . $this->plugin_id . '&configaction=Configure' ) . '#plugin_' . $this->plugin_id ) , 'statusnet' ), 
 			'time' => '', 
 			'image_url' => ''
