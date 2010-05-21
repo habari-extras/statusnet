@@ -10,9 +10,9 @@
 	<help>
 		<value><![CDATA[
 			<p>To announce this blog's new posts on a &micro;blog, enter your username,
-			password, and other settings in the StatusNet section of your Profile.</p>
+			password, and other settings in the <a href="user#statusnet">StatusNet section of your Profile</a>.</p>
 			<p>To display &micro;blog notices in a sidebar, add and configure a
-			<strong>StatusNet</strong> Block on the <strong>Themes</strong> page.</p>
+			<strong>StatusNet</strong> Block on the <a href="themes"><strong>Themes</strong></a> page.</p>
 		]]></value>
 	</help>
 </pluggable>
