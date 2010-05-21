@@ -13,6 +13,9 @@
 
 class StatusNet extends Plugin
 {
+	/**
+	 * Pro-forma update beacon support
+	 **/
 	public function action_update_check()
 	{
 		Update::add( 'StatusNet', '8676A858-E4B1-11DD-9968-131C56D89593', $this->info->version );
@@ -57,7 +60,7 @@ class StatusNet extends Plugin
 	/**
 	 * Add the StatusNet user options to the list of valid field names.
 	 * This causes adminhandler to recognize the statusnet fields and
-	 * to set the userinfo record appropriately
+	 * to set the userinfo record appropriately.
 	**/
 	public function filter_adminhandler_post_user_fields( $fields )
 	{
@@ -101,6 +104,10 @@ class StatusNet extends Plugin
 		}
 	}
 
+	/**
+	 * After
+	 * @param Post $post
+	 **/
 	public function action_post_insert_after( $post )
 	{
 		return $this->action_post_update_status( $post, -1, $post->status );
@@ -114,7 +121,7 @@ class StatusNet extends Plugin
 	 * @param int $limit Number of notices to fetch
 	 * @param bool $linkify_urls Output anchor HTML for URLS
 	 * @param string $cache The name of the cache group to use
-	 * @param int $cachettl Cache duration
+	 * @param int $cachettl Cache duration in seconds
 	 * @return array notices The status messages
 	 **/
 	public function notices( $svc, $username, $hide_replies = false, $limit = 1, $linkify_urls = false, $cache = 'statusnet', $cachettl = 60 )
@@ -190,7 +197,9 @@ class StatusNet extends Plugin
 					$notices[] = $notice;
 				}
 				// Cache (even errors) to avoid hitting rate limit.
-				// Use cache group to cache multiple statuses (objects)
+				// Use cache group to cache multiple statuses (objects).
+				// Name caches dynamically, so one cache per cacher
+				// (e.g., several Blocks with different users/services).
 				foreach ($notices as $i => $notice) {
 					Cache::set( array( $cache, $i), $notice, $cachettl );
 				}
