@@ -105,12 +105,45 @@ class StatusNet extends Plugin
 	}
 
 	/**
+	 * Add StatusNet options to each user's profile page.
+	 **/
+	public function action_form_user( $form, $edit_user )
+	{
+		$statusnet_svc = ( isset( $edit_user->info->statusnet_svc ) ) ? $edit_user->info->statusnet_svc : '';
+		$statusnet_name = ( isset( $edit_user->info->statusnet_name ) ) ? $edit_user->info->statusnet_name : '';
+		$statusnet_pass = ( isset( $edit_user->info->statusnet_pass ) ) ? $edit_user->info->statusnet_pass : '';
+		
+		$statusnet = $form->insert( 'page_controls', 'wrapper', 'statusnet', _t( 'StatusNet', 'statusnet' ) );
+		$statusnet->class = 'container settings';
+		$statusnet->append( 'static', 'statusnet', '<h2>' . htmlentities( _t( 'StatusNet', 'statusnet' ), ENT_COMPAT, 'UTF-8' ) . '</h2>' );
+		
+		$form->move_after( $statusnet, $form->change_password );
+		$statusnet_svc = $form->statusnet->append( 'text', 'statusnet_svc', 'null:null', _t('&micro;blog service:', 'statusnet' ), 'optionscontrol_text' );
+		$statusnet_svc->class[] = 'item clear';
+		$statusnet_svc->value = $edit_user->info->statusnet_svc;		
+		$statusnet_svc->charlimit = 64;
+		
+		$statusnet_name = $form->statusnet->append( 'text', 'statusnet_name', 'null:null', _t( 'Service username', 'statusnet' ), 'optionscontrol_text' );
+		$statusnet_name->class[] = 'item clear';
+		$statusnet_name->value = $edit_user->info->statusnet_name;
+		$statusnet_name->charlimit = 64;
+		$statusnet_name->helptext = _t( 'Your statusnet service account, for announcing new blog posts on your µblog', 'statusnet' );
+		
+		$statusnet_pass = $form->statusnet->append( 'text', 'statusnet_pass', 'null:null', _t( 'Service password', 'statusnet' ), 'optionscontrol_text' );
+		$statusnet_pass->class[] = 'item clear';
+		$statusnet_pass->type = 'password';
+		$statusnet_pass->value = $edit_user->info->statusnet_pass;
+		$statusnet_pass->helptext = '';
+	}
+	
+	/**
 	 * Add the StatusNet user options to the list of valid field names.
 	 * This causes adminhandler to recognize the statusnet fields and
 	 * to set the userinfo record appropriately
 	**/
 	public function filter_adminhandler_post_user_fields( $fields )
 	{
+		$fields['statusnet_svc'] = 'statusnet_svc';
 		$fields['statusnet_name'] = 'statusnet_name';
 		$fields['statusnet_pass'] = 'statusnet_pass';
 		return $fields;
