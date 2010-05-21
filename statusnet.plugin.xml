@@ -9,16 +9,10 @@
 	<copyright>2009</copyright>
 	<help>
 		<value><![CDATA[
-			<p>For the <strong>&micro;blog service</strong> setting,
-			enter the portion of your &micro;blog service home page
-			URL between the slash at the end of <tt>http://</tt>
-			and the slash before your user name:
-			<tt>http://</tt><strong>statusnet.service</strong><tt>/</tt><em>yourname</em>.</p>
-			<p>To use identi.ca, for example, since your URL is
-			something like <tt>http://identi.ca/yourname</tt>,
-			you would enter <tt>identi.ca</tt>.</p>
-			<p>To display your latest notices, call <code>&lt;?php $theme->statusnet(); ?&gt;</code>
-			at the appropriate place in your theme, or add a <strong>StatusNet</strong> Block on the <strong>Themes</strong> page.</p>
+			<p>To announce this blog's new posts on a &micro;blog, enter your username,
+			password, and other settings in the StatusNet section of your Profile.</p>
+			<p>To display &micro;blog notices in a sidebar, add and configure a
+			<strong>StatusNet</strong> Block on the <strong>Themes</strong> page.</p>
 		]]></value>
 	</help>
 </pluggable>

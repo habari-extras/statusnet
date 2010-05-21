@@ -40,71 +40,6 @@ class StatusNet extends Plugin
 	}
 
 	/**
-	 * Respond to the user selecting an action on the plugin page
-	 * @param string $plugin_id The string id of the acted-upon plugin
-	 * @param string $action The action string supplied via the filter_plugin_config hook
-	 **/
-	public function configure()
-	{
-		$ui = new FormUI( strtolower( get_class( $this ) ) );
-		$ui->append('fieldset', 'svcinfo', _t('Service', 'statusnet'));
-
-		$statusnet_svc = $ui->append( 'text', 'svc', 'statusnet__svc', _t('&micro;blog service:') );
-		$ui->svc->move_into($ui->svcinfo);
-
-		$statusnet_username = $ui->append( 'text', 'username', 'statusnet__username', _t('Service username:') );
-		$ui->username->move_into($ui->svcinfo);
-
-		$statusnet_password = $ui->append( 'password', 'password', 'statusnet__password', _t('Service password:') );
-		$ui->password->move_into($ui->svcinfo);
-
-		$ui->append('fieldset', 'publishinfo', _t('Publish', 'statusnet'));			
-
-		$statusnet_post = $ui->append( 'checkbox', 'post_status', 'statusnet__post_status', 
-			_t('Announce new blog posts on µblog') );
-		$statusnet_post->options = array( '0' => _t('Disabled'), '1' => _t('Enabled') );
-		$ui->post_status->move_into($ui->publishinfo);
-
-		$statusnet_post = $ui->append( 'text', 'prefix', 'statusnet__prefix',
-			 _t('Announcement prefix (e.g., "New post: "):') );
-		$ui->prefix->move_into($ui->publishinfo);
-
-		$ui->append('fieldset', 'subscribeinfo', _t('Subscribe', 'statusnet'));			
-
-		$statusnet_limit = $ui->append( 'select', 'limit', 'statusnet__limit', 
-			_t('Number of notices to display:') );
-		$statusnet_limit->options = array_combine(range(1, 20), range(1, 20));
-		$ui->limit->move_into($ui->subscribeinfo);
-
-		$statusnet_show = $ui->append( 'checkbox', 'hide_replies', 
-			'statusnet__hide_replies', _t('Hide @replies') );
-		$ui->hide_replies->move_into($ui->subscribeinfo);
-
-		$statusnet_show = $ui->append( 'checkbox', 'linkify_urls', 
-			'statusnet__linkify_urls', _t('Linkify URLs') );
-		$ui->linkify_urls->move_into($ui->subscribeinfo);
-
-		$statusnet_cache_time = $ui->append( 'text', 'cache', 'statusnet__cache', 
-			_t('Cache expiry in seconds:') );
-		$ui->cache->move_into($ui->subscribeinfo);
-
-		$ui->on_success( array( $this, 'updated_config' ) );
-		$ui->append( 'submit', 'save', _t('Save') );
-
-		return $ui->get();
-	}
-
-	/**
-	 * Returns true if plugin config form values defined in action_plugin_ui should be stored in options by Habari
-	 * @return bool True if options should be stored
-	 **/
-	public function updated_config( FormUI $ui )
-	{
-		Session::notice( _t( 'StatusNet options saved.', 'statusnet' ) );
-		$ui->save();
-	}
-
-	/**
 	 * Add StatusNet options to each user's profile page.
 	 **/
 	public function action_form_user( $form, $edit_user )
@@ -122,18 +57,22 @@ class StatusNet extends Plugin
 		$statusnet_svc->class[] = 'item clear';
 		$statusnet_svc->value = $edit_user->info->statusnet_svc;		
 		$statusnet_svc->charlimit = 64;
+		$statusnet_svc->helptext = _t( 'Enter the portion of your &micro;blog URL between the slash at the end of <tt>http://</tt> and the slash before your user name: <tt>http://</tt><strong>statusnet.service</strong><tt>/</tt><em>yourname</em>.', 'statusnet' );
 		
 		$statusnet_name = $form->statusnet->append( 'text', 'statusnet_name', 'null:null', _t( 'Service username', 'statusnet' ), 'optionscontrol_text' );
 		$statusnet_name->class[] = 'item clear';
 		$statusnet_name->value = $edit_user->info->statusnet_name;
 		$statusnet_name->charlimit = 64;
-		$statusnet_name->helptext = _t( 'Your statusnet service account, for announcing new blog posts on your µblog', 'statusnet' );
 		
 		$statusnet_pass = $form->statusnet->append( 'text', 'statusnet_pass', 'null:null', _t( 'Service password', 'statusnet' ), 'optionscontrol_text' );
 		$statusnet_pass->class[] = 'item clear';
 		$statusnet_pass->type = 'password';
 		$statusnet_pass->value = $edit_user->info->statusnet_pass;
 		$statusnet_pass->helptext = '';
+		
+		$statusnet_prefix = $form->statusnet->append( 'text', 'statusnet_prefix', 'null:null', _t( 'Prefix (e.g., "New post: "):', 'statusnet' ), 'optionscontrol_text' );
+		$statusnet_prefix->class[] = 'item clear';
+		$statusnet_prefix->value = $edit_user->info->statusnet_prefix;
 	}
 	
 	/**
@@ -146,6 +85,7 @@ class StatusNet extends Plugin
 		$fields['statusnet_svc'] = 'statusnet_svc';
 		$fields['statusnet_name'] = 'statusnet_name';
 		$fields['statusnet_pass'] = 'statusnet_pass';
+		$fields['statusnet_prefix'] = 'statusnet_prefix';
 		return $fields;
 	}
 
@@ -160,7 +100,6 @@ class StatusNet extends Plugin
 		$request->add_header( array( 'Authorization' => 'Basic ' . base64_encode( "{$name}:{$pw}" ) ) );
 		$request->set_body( 'source=habari&status=' . urlencode( $notice ) );
 		$request->execute();
-
 	}
 
 	/**
@@ -173,17 +112,12 @@ class StatusNet extends Plugin
 	{
 		if ( is_null( $oldvalue ) ) return;
 		if ( $newvalue == Post::status( 'published' ) && $post->content_type == Post::type('entry') && $newvalue != $oldvalue ) {
-			if ( Options::get( 'statusnet__post_status' ) == '1' ) {
-				$user = User::get_by_id( $post->user_id );
-				if ( ! empty( $user->info->statusnet_name ) && ! empty( $user->info->statusnet_pass ) ) {
-					$name = $user->info->statusnet_name;
-					$pw = $user->info->statusnet_pass;
-				} else {
-					$name = Options::get( 'statusnet__username' );
-					$pw = Options::get( 'statusnet__password' );
-				}
-				$svcurl = 'https://' . Options::get('statusnet__svc') . '/api/statuses/update.xml';
-				$this->post_status( $svcurl, Options::get( 'statusnet__prefix' ) . $post->title . ' ' . $post->permalink, $name, $pw );
+			$user = User::get_by_id( $post->user_id );
+			if ( ! empty( $user->info->statusnet_name ) && ! empty( $user->info->statusnet_pass ) ) {
+				$name = $user->info->statusnet_name;
+				$pw = $user->info->statusnet_pass;
+				$svcurl = 'https://' . $user->info->statusnet_svc . '/api/statuses/update.xml';
+				$this->post_status( $svcurl, $user->info->statusnet_prefix . $post->title . ' ' . $post->permalink, $name, $pw );
 			}
 		}
 	}
@@ -212,10 +146,10 @@ class StatusNet extends Plugin
 				$statusnet_url .= '?count=' . $limit;
 			}
 			// Get cache group.
-			if ( Cache::has_group('statusnet') ) {
-				$notices = Cache::get_group('statusnet');
-			}
-			else {
+//			if ( Cache::has_group('statusnet') ) {
+//				$notices = Cache::get_group('statusnet');
+//			}
+//			else {
 				try {
 					$response = RemoteRequest::get_contents( $statusnet_url );
 					$xml = @new SimpleXMLElement( $response );
@@ -272,10 +206,10 @@ class StatusNet extends Plugin
 				}
 				// Cache (even errors) to avoid hitting rate limit.
 				// Use cache group to cache multiple statuses (objects)
-				foreach ($notices as $i => $notice) {
-					Cache::set( array('statusnet', $i), $notice, $cache );
-				}
-			}
+//				foreach ($notices as $i => $notice) {
+//					Cache::set( array('statusnet', $i), $notice, $cache );
+//				}
+//			}
 			if ( $linkify_urls != FALSE ) {
 				/* http: links */
 				foreach ($notices as $notice) {
@@ -296,7 +230,7 @@ class StatusNet extends Plugin
 	}
 
 	/**
-	 * The newer Blocks and Areas support.
+	 * Add statusnet block to theme admin options.
 	 */	
 	public function filter_block_list($block_list)
 	{
@@ -304,10 +238,37 @@ class StatusNet extends Plugin
 		return $block_list;
 	}
 	
+	/**
+	 * Configure a block
+	 **/
+	public function action_block_form_statusnet( $form, $block )
+	{
+		
+		$sn_fieldset = $form->append( 'fieldset', 'tweet_settings', _t( 'µblog Settings', 'statusnet' ) );
+		
+		$statusnet_svc = $sn_fieldset->append( 'text', 'svc', $block, _t( 'µblog service:', 'statusnet' ) );
+		
+		$statusnet_username = $sn_fieldset->append( 'text', 'username', $block, _t( 'Service username:', 'statusnet' ) );
+				
+		$statusnet_limit = $sn_fieldset->append( 'select', 'limit', $block, _t( ('Number of notices to display:'), 'statusnet' ) );
+		$statusnet_limit->options = array_combine(range(1, 20), range(1, 20));
+		
+		$statusnet_show = $sn_fieldset->append( 'checkbox', 'hide_replies', $block, _t( 'Hide @replies', 'statusnet' ) );
+		
+		$statusnet_show = $sn_fieldset->append( 'checkbox', 'linkify_urls', $block, _t( 'Linkify URLs', 'statusnet' ) );
+				
+		$statusnet_cache_time = $sn_fieldset->append( 'text', 'cache', $block, _t( 'Cache expiry in seconds:', 'statusnet' ) );
+		
+		$form->append( 'submit', 'save', _t( 'Save', 'statusnet' ) );
+	}
+	
+	/**
+	 * Put content in block.
+	 */
 	public function action_block_content_statusnet($block, $theme)
 	{
-		$sn = Options::get_group( 'statusnet' );
-		$block->notices = $this->notices( $sn['svc'], $sn['username'], $sn['hide_replies'], $sn['limit'], $sn['cache'], $sn['linkify_urls'] );
+		$block->notices = $this->notices( $block->svc, $block->username, $block->hide_replies,
+										 $block->limit, $block->cache, $block->linkify_urls );
 	}
 
 	/**
@@ -315,7 +276,6 @@ class StatusNet extends Plugin
 	 */
 	public function action_init()
 	{
-		$this->add_template('statusnet', dirname(__FILE__) . '/statusnet.php');
 		$this->add_template('block.statusnet', dirname(__FILE__) . '/block.statusnet.php');
 	}	
 	
