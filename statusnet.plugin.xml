@@ -9,9 +9,9 @@
 	<copyright>2009</copyright>
 	<help>
 		<value><![CDATA[
-			<p>To announce this blog's new posts on a &micro;blog, enter your username,
-			password, and other settings in the <a href="user#statusnet">StatusNet section of your Profile</a>.</p>
-			<p>To display &micro;blog notices in a sidebar, add and configure a
+			<p>To announce this blog's new posts on a &micro;blog, enter your &micro;blog service, username,
+			and password in the <a href="user#statusnet"><em>StatusNet</em> section of your <strong>Profile</strong></a>.</p>
+			<p>To display &micro;blog notices in a theme, add and configure a
 			<strong>StatusNet</strong> Block on the <a href="themes"><strong>Themes</strong></a> page.</p>
 		]]></value>
 	</help>

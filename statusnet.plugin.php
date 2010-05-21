@@ -3,16 +3,13 @@
  * StatusNet Twitter-Compat API Plugin
  *
  * Show your latest StatusNet notices in your theme and/or
- * post your latest blog post to your StatusNet service.
- *
- * Usage: <?php $theme->statusnet(); ?> to show your latest notices.
- * Copy the statusnet.php template to your active theme to customize
- * output display.
- *
+ * announce your latest blog post on your StatusNet service.
  **/
 
 class StatusNet extends Plugin
 {
+	const DEFAULT_CACHE_SECONDS = 60;
+
 	/**
 	 * Pro-forma update beacon support
 	 **/
@@ -201,7 +198,7 @@ class StatusNet extends Plugin
 				// Name caches dynamically, so one cache per cacher
 				// (e.g., several Blocks with different users/services).
 				foreach ($notices as $i => $notice) {
-					Cache::set( array( $cache, $i), $notice, $cachettl );
+					Cache::set( array( $cache, $i), $notice, ( $cachettl !== false ? $cachettl : StatusNet::DEFAULT_CACHE_SECONDS ) );
 				}
 			}
 			if ( $linkify_urls != FALSE ) {
