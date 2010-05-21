@@ -129,10 +129,16 @@ class StatusNet extends Plugin
 
 	/**
 	 * Fetch notices from service.
-	 *
+	 * @param string $svc The statusnet server
+	 * @param string $username The user on the statusnet server
+	 * @param bool $hide_replies Suppress @-notices
+	 * @param int $limit Number of notices to fetch
+	 * @param bool $linkify_urls Output anchor HTML for URLS
+	 * @param string $cache The name of the cache group to use
+	 * @param int $cachettl Cache duration
 	 * @return array notices The status messages
 	 **/
-	public function notices( $svc, $username, $hide_replies = false, $limit = 1, $cache = 60, $linkify_urls = false )
+	public function notices( $svc, $username, $hide_replies = false, $limit = 1, $linkify_urls = false, $cache = 'statusnet', $cachettl = 60 )
 	{
 		$notices = array();
 		if ( $svc && $username != '' ) {
@@ -146,10 +152,10 @@ class StatusNet extends Plugin
 				$statusnet_url .= '?count=' . $limit;
 			}
 			// Get cache group.
-//			if ( Cache::has_group('statusnet') ) {
-//				$notices = Cache::get_group('statusnet');
-//			}
-//			else {
+			if ( Cache::has_group( $cache ) ) {
+				$notices = Cache::get_group( $cache );
+			}
+			else {
 				try {
 					$response = RemoteRequest::get_contents( $statusnet_url );
 					$xml = @new SimpleXMLElement( $response );
@@ -206,10 +212,10 @@ class StatusNet extends Plugin
 				}
 				// Cache (even errors) to avoid hitting rate limit.
 				// Use cache group to cache multiple statuses (objects)
-//				foreach ($notices as $i => $notice) {
-//					Cache::set( array('statusnet', $i), $notice, $cache );
-//				}
-//			}
+				foreach ($notices as $i => $notice) {
+					Cache::set( array( $cache, $i), $notice, $cachettl );
+				}
+			}
 			if ( $linkify_urls != FALSE ) {
 				/* http: links */
 				foreach ($notices as $notice) {
@@ -257,18 +263,18 @@ class StatusNet extends Plugin
 		
 		$statusnet_show = $sn_fieldset->append( 'checkbox', 'linkify_urls', $block, _t( 'Linkify URLs', 'statusnet' ) );
 				
-		$statusnet_cache_time = $sn_fieldset->append( 'text', 'cache', $block, _t( 'Cache expiry in seconds:', 'statusnet' ) );
+		$statusnet_cache_time = $sn_fieldset->append( 'text', 'cachettl', $block, _t( 'Cache expiry in seconds:', 'statusnet' ) );
 		
 		$form->append( 'submit', 'save', _t( 'Save', 'statusnet' ) );
 	}
 	
 	/**
-	 * Put content in block.
+	 * Put content in block
 	 */
 	public function action_block_content_statusnet($block, $theme)
 	{
-		$block->notices = $this->notices( $block->svc, $block->username, $block->hide_replies,
-										 $block->limit, $block->cache, $block->linkify_urls );
+		$block->notices = $this->notices( $block->svc, $block->username, $block->hide_replies, $block->limit,
+										 $block->linkify_urls, $block->svc . '.' . $block->username, $block->cachettl );
 	}
 
 	/**
