@@ -19,27 +19,6 @@ class StatusNet extends Plugin
 	}
 
 	/**
-	 * Set defaults.
-	 **/
-	public function action_plugin_activation( $file )
-	{
-		if(Plugins::id_from_file($file) == Plugins::id_from_file(__FILE__)) {
-			if ( Options::get( 'statusnet__hide_replies' ) !== 0 ) {
-				Options::set( 'statusnet__hide_replies', 1 );
-			}
-			if ( Options::get( 'statusnet__linkify_urls' ) !== 0 ) {
-				Options::set( 'statusnet__linkify_urls', 1 );
-			}
-			if ( !Options::get( 'statusnet__svc' )  ) {
-				Options::set( 'statusnet__svc', 'identi.ca' );
-			}
-			if ( !Options::get( 'statusnet__limit' ) ) {
-				Options::set( 'statusnet__limit', 1 );
-			}
-		}
-	}
-
-	/**
 	 * Add StatusNet options to each user's profile page.
 	 **/
 	public function action_form_user( $form, $edit_user )
