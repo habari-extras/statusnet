@@ -205,7 +205,7 @@ class StatusNet extends Plugin
 				}
 			}
 			if ( $linkify_urls != FALSE ) {
-				/* http: links */
+				// http: links
 				foreach ($notices as $notice) {
 					$notice->text = preg_replace( '%https?://\S+?(?=(?:[.:?"!$&\'()*+,=]|)(?:\s|$))%i', "<a href=\"$0\">$0</a>", $notice->text );
 				}
@@ -213,10 +213,9 @@ class StatusNet extends Plugin
 		}
 		else {
 			$notice = (object) array (
-			'text' => _t('Check "µblog service" and "Service username" settings in <a href="%s">StatusNet plugin config</a>', array( URL::get( 'admin' , 
-			'page=plugins&configure=' . $this->plugin_id . '&configaction=Configure' ) . '#plugin_' . $this->plugin_id ) , 'statusnet' ), 
-			'time' => '', 
-			'image_url' => ''
+									  'text' => _t('Check service and/or username', 'statusnet' ),
+									  'time' => '',
+									  'image_url' => ''
 			);
 			$notices[] = $notice;
 		}
