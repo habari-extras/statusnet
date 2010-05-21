@@ -296,17 +296,6 @@ class StatusNet extends Plugin
 	}
 
 	/**
-	 * The older, $theme->statusnet() handle.
-	 * @param Theme $theme The theme that will display the template	 
-	 */
-	public function theme_statusnet( $theme )
-	{
-		$sn = Options::get_group( 'statusnet' );
-		$theme->notices = $this->notices( $sn['svc'], $sn['username'], $sn['hide_replies'], $sn['limit'], $sn['cache'], $sn['linkify_urls'] );
-		return $theme->fetch( 'statusnet' );
-	}
-
-	/**
 	 * The newer Blocks and Areas support.
 	 */	
 	public function filter_block_list($block_list)
